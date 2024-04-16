@@ -678,11 +678,13 @@ func (h *Headscale) toNode(
 
 	var hostname string
 	if dnsConfig != nil && dnsConfig.Proxied { // MagicDNS
+		// e3team start: remove user from magicdns fqdn
 		hostname = fmt.Sprintf(
 			"%s.%s",
 			machine.GivenName,
 			baseDomain,
 		)
+		// e3team end
 		if len(hostname) > maxHostnameLength {
 			return nil, fmt.Errorf(
 				"hostname %q is too long it cannot except 255 ASCII chars: %w",
