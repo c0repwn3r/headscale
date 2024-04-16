@@ -35,11 +35,9 @@ jobs:
             config-example.yaml
 
       - uses: cachix/install-nix-action@v16
-        if: steps.changed-files.outputs.any_changed == 'true'
 
       - name: Run build
         id: build
-        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           nix build |& tee build-result
           BUILD_STATUS="${PIPESTATUS[0]}"
@@ -52,21 +50,7 @@ jobs:
 
           exit $BUILD_STATUS
 
-      - name: Nix gosum diverging
-        uses: actions/github-script@v6
-        if: failure() && steps.build.outcome == 'failure'
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.pulls.createReviewComment({
-              pull_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'Nix build failed with wrong gosum, please update "vendorSha256" (${{ steps.build.outputs.OLD_HASH }}) for the "headscale" package in flake.nix with the new SHA: ${{ steps.build.outputs.NEW_HASH }}'
-            })
-
       - uses: actions/upload-artifact@v3
-        if: steps.changed-files.outputs.any_changed == 'true'
         with:
           name: headscale-linux
           path: result/bin/headscale
